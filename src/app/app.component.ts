@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +27,34 @@ import { Component } from '@angular/core';
   `,
   styles: []
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+
   title = 'web-worker-base';
+
+  public async ngOnInit(): Promise<void> {
+    const audioContext = new AudioContext();
+    await audioContext.audioWorklet.addModule('./assets/audio.worklet.js');
+    // await audioContext.audioWorklet.addModule('./1.worker.js');
+    const whiteNoiseNode = new AudioWorkletNode(audioContext, 'white-noise-processor');
+    whiteNoiseNode.addEventListener('processorerror', error => {
+      console.log(error);
+    });
+    // whiteNoiseNode.connect(audioContext.destination);
+  }
+
+}
+
+if (typeof Worker !== 'undefined') {
+  // Create a new
+  const worker = new Worker('./app.worker', { type: 'module' });
+  try {
+    // const worker1 = new Worker('./audio.worker', { type: 'module' });
+  } catch (error) {}
+  worker.onmessage = ({ data }) => {
+    console.log(`page got message: ${data}`);
+  };
+  worker.postMessage('hello');
+} else {
+  // Web Workers are not supported in this environment.
+  // You should add a fallback so that your program still executes correctly.
 }
